@@ -21,14 +21,17 @@ TRAIN_ANNOT_PATH            = "thermographic_data/train"
 TRAIN_LOGDIR                = "log" + '/' + TRAIN_MODEL_NAME
 TRAIN_CHECKPOINTS_FOLDER    = "checkpoints" + '/' + TRAIN_MODEL_NAME
 TRAIN_BATCH_SIZE            = 4
-TRAIN_INPUT_SIZE            = 416
+# TRAIN_INPUT_SIZE            = 416
+TRAIN_INPUT_SIZE            = (640, 480)
 TRAIN_FROM_CHECKPOINT       = False # "checkpoints/yolov3_custom"
-TRAIN_LR_INIT               = 1e-4
+# TRAIN_LR_INIT               = 1e-4
+TRAIN_LR_INIT               = 1e-2
 TRAIN_LR_END                = 1e-6
 TRAIN_WARMUP_EPOCHS         = 1
 TRAIN_EPOCHS                = 10
 TRAIN_DECAY                 = 0.8
-TRAIN_DECAY_STEPS           = 50.0
+# TRAIN_DECAY_STEPS           = 50.0
+TRAIN_DECAY_STEPS           = 10.0
 
 # TEST options
 TEST_ANNOT_PATH             = "thermographic_data/validate"

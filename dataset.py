@@ -146,7 +146,9 @@ class Dataset():
     
             # preprocess image
             image = transform_images(image[:], self.train_input_size)
-            
+            # image = transform_images(image[:], (
+            # 640, 480))  # Lub przekazując TRAIN_INPUT_SIZE, jeśli potrzebujesz wykorzystać tę zmienną
+
             # obtain concat frame if none exist
             if x == 0: 
 
@@ -178,21 +180,26 @@ class Dataset():
         with tf.device('/cpu:0'):
             
             # output sizes of yolo_v3
-            self.train_output_sizes = self.train_input_size // self.strides
-            
+            # self.train_output_sizes = self.train_input_size // self.strides
+            self.train_output_sizes = (
+            self.train_input_size[0] // self.strides[0], self.train_input_size[1] // self.strides[1])
+
             # initialise array of zeros based on original image input size to store image
-            batch_image = np.zeros((self.batch_size, self.train_input_size, self.train_input_size, 
-                                    3 * self.batch_frames), dtype = np.float32)
-            
+            # batch_image = np.zeros((self.batch_size, self.train_input_size, self.train_input_size,
+            #                         3 * self.batch_frames), dtype = np.float32)
+            batch_image = np.zeros((self.batch_size, 640, 480, 3 * self.batch_frames), dtype=np.float32)
+
             # intialise arrays of zeros based on output grid shape to stores processed labels
             batch_label_sbbox = np.zeros((self.batch_size, self.train_output_sizes[0], self.train_output_sizes[0],
                                           self.anchor_per_scale, 5 + self.num_classes), dtype = np.float32)
             batch_label_mbbox = np.zeros((self.batch_size, self.train_output_sizes[1], self.train_output_sizes[1],
                                           self.anchor_per_scale, 5 + self.num_classes), dtype = np.float32)
-            batch_label_lbbox = np.zeros((self.batch_size, self.train_output_sizes[2], self.train_output_sizes[2],
-                                          self.anchor_per_scale, 5 + self.num_classes), dtype = np.float32)
+            # batch_label_lbbox = np.zeros((self.batch_size, self.train_output_sizes[2], self.train_output_sizes[2],
+            #                               self.anchor_per_scale, 5 + self.num_classes), dtype = np.float32)
+            batch_label_lbbox = np.zeros((self.batch_size, self.train_output_sizes[0], self.train_output_sizes[1],
+                                          self.anchor_per_scale, 5 + self.num_classes), dtype=np.float32)
 
-            # initialise array of zeros to store true x, y, w, h bboxes for respective scales 
+            # initialise array of zeros to store true x, y, w, h bboxes for respective scales
             batch_sbboxes = np.zeros((self.batch_size, self.max_bbox_per_scale, 4), dtype = np.float32)
             batch_mbboxes = np.zeros((self.batch_size, self.max_bbox_per_scale, 4), dtype = np.float32)
             batch_lbboxes = np.zeros((self.batch_size, self.max_bbox_per_scale, 4), dtype = np.float32)
@@ -291,9 +298,19 @@ class Dataset():
 #             theta = 0.01
 #             smooth_onehot = onehot * (1 - theta) + theta * uniform_distribution
             
-            # obtain true x, y, w, h based on train_input_size
+            # # obtain true x, y, w, h based on train_input_size
+            # bbox_xywh = bbox_coor * self.train_input_size
+
+            # Obtain true x, y, w, h based on train_input_size
             bbox_xywh = bbox_coor * self.train_input_size
-            
+
+            # Uwzględnienie różnych proporcji wymiarów obrazu wejściowego i Twojego obrazu
+            # Skalowanie bbox_xywh na podstawie stosunku wymiarów
+            bbox_xywh[0] *= float(self.train_input_size[1]) / 640.0  # Skalowanie wymiaru x
+            bbox_xywh[1] *= float(self.train_input_size[0]) / 480.0  # Skalowanie wymiaru y
+            bbox_xywh[2] *= float(self.train_input_size[1]) / 640.0  # Skalowanie szerokości
+            bbox_xywh[3] *= float(self.train_input_size[0]) / 480.0  # Skalowanie wysokości
+
             # obtain true scaled x, y, w, h for each stride
             bbox_xywh_scaled = 1.0 * bbox_xywh[np.newaxis, :] / self.strides[:, np.newaxis]
             

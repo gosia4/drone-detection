@@ -9,9 +9,10 @@ CLASSES               = "thermographic_data/classes.txt"
 NUM_OF_CLASSES        = len(read_class_names(CLASSES))
 MODEL_NAME            = "model_2"
 CHECKPOINTS_FOLDER    = "checkpoints" + "/" + MODEL_NAME
-ANNOT_PATH            = "raw_videos/free_2.mp4"
+ANNOT_PATH            = "raw_videos/przyciete_35_7mb.mp4"
 OUTPUT_PATH           = 'predicted_videos/' + MODEL_NAME 
-INPUT_SIZE            = 416
+# INPUT_SIZE            = 416
+INPUT_SIZE            = (640, 480)
 SCORE_THRESHOLD       = 0.8
 IOU_THRESHOLD         = 0.45
 
