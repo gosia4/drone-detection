@@ -148,6 +148,9 @@ def konwertuj_wspolrzedne(plik_txt, output_folder, image_width, image_height):
     yolo_wspolrzedne = []
 
     for wsp in wspolrzedne:
+        if len(wsp.split()) < 4:
+            print(f"Plik '{plik_txt}' zawiera mniej niż 4 liczby i zostanie pominięty.")
+            continue
         # klasa, x1, y1, x2, y2 = map(float, wsp.split())
         x1, y1, x2, y2 = map(float, wsp.split())
 
@@ -197,9 +200,9 @@ def konwertuj_wspolrzedne(plik_txt, output_folder, image_width, image_height):
 # Ustawienia do konwertowania wspórzédnych
 
 # folder_txt = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\free_3_niezmormalizowane, validate"
-folder_txt = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\drone-detection\drone-detection\thermographic_data\validate\labels\do konwertowania"
+folder_txt = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\drone-detection\drone-detection\thermographic_data\validate\labels\dodatkowe_dane"
 # output_folder = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\drone-detection\drone-detection\thermographic_data\validate\labels\free_3"
-output_folder = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\drone-detection\drone-detection\thermographic_data\validate\labels\free_3"
+output_folder = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\drone-detection\drone-detection\thermographic_data\validate\labels\przekonwertowane"
 
 # Konwersja plików txt
 for plik in os.listdir(folder_txt):
@@ -213,10 +216,10 @@ for plik in os.listdir(folder_txt):
 
 # # folder_path = r"C:\Users\gosia\OneDrive - vus.hr\klatki_przyciete_7mb\test"
 # # folder_path = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\drone-detection-thermal-images\thermal_signature_drone_detection\thermographic_day\validate\images"
-# folder_path = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\dodatkowe_validate"
+# folder_path = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\drone-detection\drone-detection\thermographic_data\validate\images\dodatkowe_dane"
 #
 # # Ustawienie ścieżki do folderu do zapisu współrzędnych
-# output_folder = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\drone-detection\drone-detection\thermographic_data\validate\labels\free_3"
+# output_folder = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\drone-detection\drone-detection\thermographic_data\validate\labels\dodatkowe_dane"
 # # output_folder = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\probne_tagowanie"
 # # output_folder = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\drone-detection-thermal-images\thermal_signature_drone_detection\thermographic_day\train\labels_2"
 #

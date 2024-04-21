@@ -41,7 +41,7 @@ class darknet_conv2d_block(tf.keras.layers.Layer):
         # add conv2d layer attribute
         self.conv2d_block = tf.keras.layers.Conv2D(filters=filters, kernel_size=kernel_size, strides=strides,
                                                    padding=padding,
-                                                   kernel_regularizer=tf.keras.regularizers.l2(weight_decay))
+                                                   kernel_regularizer=tf.keras.regularizers.l2(weight_decay), input_shape=(640, 480, 3))
 
         # add batch norm layer attribute
         self.batch_norm_block = tf.keras.layers.BatchNormalization()

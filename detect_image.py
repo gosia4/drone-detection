@@ -41,8 +41,9 @@ def main():
                             checkpoint_dir = CHECKPOINTS_FOLDER, model_name = MODEL_NAME)
     
     # load weights of last saved checkpoint
-    yolo_v3_model.load_weights(yolo_v3_model.checkpoint_path).expect_partial()
-        
+    # yolo_v3_model.load_weights(yolo_v3_model.checkpoint_path).expect_partial()
+    yolo_v3_model.load_weights(yolo_v3_model.checkpoint_path + '.weights.h5').expect_partial()
+
     # use model to detect random batch of images from validate / test
     if DETECT_BATCH:
         

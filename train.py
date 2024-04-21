@@ -21,23 +21,27 @@ TRAIN_ANNOT_PATH            = "thermographic_data/train"
 TRAIN_LOGDIR                = "log" + '/' + TRAIN_MODEL_NAME
 TRAIN_CHECKPOINTS_FOLDER    = "checkpoints" + '/' + TRAIN_MODEL_NAME
 TRAIN_BATCH_SIZE            = 4
+# TRAIN_BATCH_SIZE            = 1
 # TRAIN_INPUT_SIZE            = 416
-TRAIN_INPUT_SIZE            = (640, 480)
+TRAIN_INPUT_SIZE            = (640, 480, 3)
 TRAIN_FROM_CHECKPOINT       = False # "checkpoints/yolov3_custom"
-# TRAIN_LR_INIT               = 1e-4
-TRAIN_LR_INIT               = 1e-2
+TRAIN_LR_INIT               = 1e-4
+# TRAIN_LR_INIT               = 1e-2
+# TRAIN_LR_INIT               = 0.001
 TRAIN_LR_END                = 1e-6
+# TRAIN_LR_END                = 1e-4
 TRAIN_WARMUP_EPOCHS         = 1
 TRAIN_EPOCHS                = 10
 TRAIN_DECAY                 = 0.8
-# TRAIN_DECAY_STEPS           = 50.0
-TRAIN_DECAY_STEPS           = 10.0
+TRAIN_DECAY_STEPS           = 50.0
+# TRAIN_DECAY_STEPS           = 20.0
 
 # TEST options
-TEST_ANNOT_PATH             = "thermographic_data/validate"
-# TEST_ANNOT_PATH             = "C:/Users/gosia/OneDrive - vus.hr/Desktop/drone-detection/drone-detection/thermographic_data/validate"
+# TEST_ANNOT_PATH             = "thermographic_data/validate"
+TEST_ANNOT_PATH             = "C:/Users/gosia/OneDrive - vus.hr/Desktop/drone-detection/drone-detection/thermographic_data/validate"
 TEST_BATCH_SIZE             = 4
-TEST_INPUT_SIZE             = 416
+# TEST_INPUT_SIZE             = 416
+TEST_INPUT_SIZE             = (640, 480, 3)
 TEST_SCORE_THRESHOLD        = 0.3
 TEST_IOU_THRESHOLD          = 0.45
 
@@ -46,7 +50,8 @@ YOLO_STRIDES                = [8, 16, 32]
 YOLO_IOU_LOSS_THRESH        = 0.5
 YOLO_ANCHOR_PER_SCALE       = 3
 YOLO_MAX_BBOX_PER_SCALE     = 100
-YOLO_INPUT_SIZE             = 416
+YOLO_INPUT_SIZE             = (640, 480, 3)
+# YOLO_INPUT_SIZE             = 416
 YOLO_BATCH_FRAMES           = 5
 YOLO_PREPROCESS_IOU_THRESH  = 0.3
 YOLO_ANCHORS                = [[[10,  13], [16,   30], [33,   23]],
@@ -287,8 +292,10 @@ def main():
         if TRAIN_SAVE_BEST_ONLY and best_val_loss > total_val/count:
             
             # save model
-            yolo_v3_model.save_weights(yolo_v3_model.checkpoint_path)
-            
+            # yolo_v3_model.save_weights(yolo_v3_model.checkpoint_path)
+            yolo_v3_model.save_weights(yolo_v3_model.checkpoint_path + '.weights.h5')
+
+
             # update best_val_loss
             best_val_loss = total_val/count
         
