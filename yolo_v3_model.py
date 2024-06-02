@@ -17,7 +17,7 @@ class darknet_conv2d_block(tf.keras.layers.Layer):
         # inherit class constructor attributes from tf.keras.layers.Layer
         super(darknet_conv2d_block, self).__init__()
 
-        # boolean for batch norm and activation 
+        # boolean for batch norm and activation
         self.batch_norm = batch_norm
         self.activation = activation
 
@@ -27,7 +27,7 @@ class darknet_conv2d_block(tf.keras.layers.Layer):
         # determine padding given stride
         if strides == 1:
 
-            # retain input size 
+            # retain input size
             padding = 'same'
 
         else:
@@ -41,7 +41,7 @@ class darknet_conv2d_block(tf.keras.layers.Layer):
         # add conv2d layer attribute
         self.conv2d_block = tf.keras.layers.Conv2D(filters=filters, kernel_size=kernel_size, strides=strides,
                                                    padding=padding,
-                                                   kernel_regularizer=tf.keras.regularizers.l2(weight_decay), input_shape=(640, 480, 3))
+                                                   kernel_regularizer=tf.keras.regularizers.l2(weight_decay))
 
         # add batch norm layer attribute
         self.batch_norm_block = tf.keras.layers.BatchNormalization()
@@ -86,7 +86,7 @@ class darknet_res_block(tf.keras.layers.Layer):
         # inherit class constructor attributes from tf.keras.layers.Layer
         super(darknet_res_block, self).__init__()
 
-        # add darknet conv2d block attributes 
+        # add darknet conv2d block attributes
         self.darknet_conv2d_block_1 = darknet_conv2d_block(filters=filters[0], kernel_size=kernel_size[0],
                                                            strides=strides[0], weight_decay=weight_decay[0])
         self.darknet_conv2d_block_2 = darknet_conv2d_block(filters=filters[1], kernel_size=kernel_size[1],
@@ -134,10 +134,10 @@ class darknet_block(tf.keras.layers.Layer):
         """ function for forward pass of model """
         """ includes training argument as batch_norm functions differently during training and duing inference """
 
-        # inputs --> darknet_conv2d_block 
+        # inputs --> darknet_conv2d_block
         x = self.darknet_conv2d_block(inputs)
 
-        # conv2d_block_1 --> darknet_res_block 
+        # conv2d_block_1 --> darknet_res_block
         for i in range(len(self.darknet_res_block_list)):
             # pass input through respective darknet_res_block
             x = self.darknet_res_block_list[i](x)
@@ -220,7 +220,7 @@ class yolo_conv_block(tf.keras.layers.Layer):
         self.upsampling = tf.keras.layers.UpSampling2D(size=(2, 2))
         self.concatenate = tf.keras.layers.Concatenate()
 
-        # add darknet conv2d block attributes 
+        # add darknet conv2d block attributes
         self.darknet_conv2d_block_2 = darknet_conv2d_block(filters=filters[0], kernel_size=kernel_size[0],
                                                            strides=strides, weight_decay=weight_decay[0])
         self.darknet_conv2d_block_3 = darknet_conv2d_block(filters=filters[1], kernel_size=kernel_size[1],
@@ -309,7 +309,7 @@ class yolo_v3(tf.keras.Model):
         # checkpoint directory
         self.checkpoint_dir = checkpoint_dir
 
-        # checkpoint filepath 
+        # checkpoint filepath
         self.checkpoint_path = os.path.join(self.checkpoint_dir, model_name)
 
         # initialise darknet 53 attribute
@@ -360,3 +360,204 @@ class yolo_v3(tf.keras.Model):
         output_3 = self.yolo_output_block_3(stride_32)
 
         return [output_3, output_2, output_1]
+# # standard imports
+# import tensorflow as tf
+# import os
+#
+# class darknet_conv2d_block(tf.keras.layers.Layer):
+#     def __init__(self, filters, kernel_size, strides, weight_decay, activation=True, batch_norm=True):
+#         super(darknet_conv2d_block, self).__init__()
+#         self.batch_norm = batch_norm
+#         self.activation = activation
+#         self.strides = strides
+#         if strides == 1:
+#             padding = 'same'
+#         else:
+#             self.padding_layer = tf.keras.layers.ZeroPadding2D(((1, 0), (1, 0)))
+#             padding = 'valid'
+#         self.conv2d_block = tf.keras.layers.Conv2D(filters=filters, kernel_size=kernel_size, strides=strides,
+#                                                    padding=padding, kernel_regularizer=tf.keras.regularizers.l2(weight_decay))
+#         self.batch_norm_block = tf.keras.layers.BatchNormalization()
+#
+#     def call(self, inputs, training=False):
+#
+#         """ function for forward pass of model """
+#         """ includes training argument as batch_norm functions differently during training and during inference """
+#
+#         if self.strides != 1:
+#             x = self.padding_layer(inputs)
+#             x = self.conv2d_block(x)
+#         else:
+#             x = self.conv2d_block(inputs)
+#         if self.batch_norm == True:
+#             x = self.batch_norm_block(x, training=training)
+#         if self.activation == True:
+#             x = tf.nn.leaky_relu(x)
+#         return x
+#
+#
+# class darknet_res_block(tf.keras.layers.Layer):
+#     def __init__(self, filters, kernel_size, strides, weight_decay):
+#         """ class constructor that creates the layers attributes for darknet_res_block """
+#
+#         super(darknet_res_block, self).__init__()
+#         self.darknet_conv2d_block_1 = darknet_conv2d_block(filters=filters[0], kernel_size=kernel_size[0],
+#                                                            strides=strides[0], weight_decay=weight_decay[0])
+#         self.darknet_conv2d_block_2 = darknet_conv2d_block(filters=filters[1], kernel_size=kernel_size[1],
+#                                                            strides=strides[1], weight_decay=weight_decay[1])
+#
+#     def call(self, inputs, training=False):
+#         """ function for forward pass of model """
+#         """ includes training argument as batch_norm functions differently during training and duing inference """
+#
+#         residual = inputs
+#         x = self.darknet_conv2d_block_1(inputs)
+#         x = self.darknet_conv2d_block_2(x)
+#         x = tf.add(x, residual)
+#         return x
+#
+#
+# class darknet_block(tf.keras.layers.Layer):
+#     def __init__(self, num_of_blocks, filters, kernel_size, conv_strides, conv_weight_decay, res_strides,
+#                  res_weight_decay):
+#
+#         """ class constructor that creates the layers attributes for darknet_block """
+#
+#         super(darknet_block, self).__init__()
+#         self.darknet_conv2d_block = darknet_conv2d_block(filters=filters[1], kernel_size=kernel_size[1],
+#                                                          strides=conv_strides, weight_decay=conv_weight_decay)
+#         self.darknet_res_block_list = []
+#         for _ in range(num_of_blocks):
+#             self.darknet_res_block_list.append(darknet_res_block(filters=filters, kernel_size=kernel_size,
+#                                                                  strides=res_strides,
+#                                                                  weight_decay=res_weight_decay))
+#
+#     def call(self, inputs, training=False):
+#
+#         """ function for forward pass of model """
+#         """ includes training argument as batch_norm functions differently during training and duing inference """
+#
+#         x = self.darknet_conv2d_block(inputs)
+#         for i in range(len(self.darknet_res_block_list)):
+#             x = self.darknet_res_block_list[i](x)
+#         return x
+#
+#
+# class darknet(tf.keras.layers.Layer):
+#     def __init__(self):
+#         """ class constructor that creates the layers attributes for darknet """
+#
+#         super(darknet, self).__init__()
+#         self.darknet_conv2d_block = darknet_conv2d_block(filters=32, kernel_size=3, strides=1, weight_decay=0)
+#         self.darknet_block_1 = darknet_block(num_of_blocks=1, filters=[32, 64], kernel_size=[1, 3],
+#                                              conv_strides=2, conv_weight_decay=0, res_strides=[1, 1],
+#                                              res_weight_decay=[0, 0])
+#         self.darknet_block_2 = darknet_block(num_of_blocks=2, filters=[64, 128], kernel_size=[1, 3],
+#                                              conv_strides=2, conv_weight_decay=0, res_strides=[1, 1],
+#                                              res_weight_decay=[0, 0])
+#         self.darknet_block_3 = darknet_block(num_of_blocks=8, filters=[128, 256], kernel_size=[1, 3],
+#                                              conv_strides=2, conv_weight_decay=0, res_strides=[1, 1],
+#                                              res_weight_decay=[0, 0])
+#         self.darknet_block_4 = darknet_block(num_of_blocks=8, filters=[256, 512], kernel_size=[1, 3],
+#                                              conv_strides=2, conv_weight_decay=0, res_strides=[1, 1],
+#                                              res_weight_decay=[0, 0])
+#         self.darknet_block_5 = darknet_block(num_of_blocks=4, filters=[512, 1024], kernel_size=[1, 3],
+#                                              conv_strides=2, conv_weight_decay=0, res_strides=[1, 1],
+#                                              res_weight_decay=[0, 0])
+#
+#     def call(self, inputs, training=False):
+#         """ function for forward pass of model """
+#         """ includes training argument as batch_norm functions differently during training and duing inference """
+#
+#         x = self.darknet_conv2d_block(inputs)
+#         x = self.darknet_block_1(x)
+#         x = self.darknet_block_2(x)
+#         x = self.darknet_block_3(x)
+#         stride_8 = x
+#         x = self.darknet_block_4(x)
+#         stride_16 = x
+#         stride_32 = self.darknet_block_5(x)
+#         return stride_8, stride_16, stride_32
+#
+#
+# class yolo_conv_block(tf.keras.layers.Layer):
+#     def __init__(self, filters, kernel_size, strides, weight_decay):
+#         super(yolo_conv_block, self).__init__()
+#         self.darknet_conv2d_block_1 = darknet_conv2d_block(filters=filters[0], kernel_size=kernel_size[0],
+#                                                            strides=strides, weight_decay=weight_decay[0])
+#         self.upsampling = tf.keras.layers.UpSampling2D(size=(2, 2))
+#         self.concatenate = tf.keras.layers.Concatenate()
+#         self.darknet_conv2d_block_2 = darknet_conv2d_block(filters=filters[0], kernel_size=kernel_size[0],
+#                                                            strides=strides, weight_decay=weight_decay[0])
+#         self.darknet_conv2d_block_3 = darknet_conv2d_block(filters=filters[1], kernel_size=kernel_size[1],
+#                                                            strides=strides, weight_decay=weight_decay[1])
+#         self.darknet_conv2d_block_4 = darknet_conv2d_block(filters=filters[0], kernel_size=kernel_size[0],
+#                                                            strides=strides, weight_decay=weight_decay[0])
+#         self.darknet_conv2d_block_5 = darknet_conv2d_block(filters=filters[1], kernel_size=kernel_size[1],
+#                                                            strides=strides, weight_decay=weight_decay[1])
+#         self.darknet_conv2d_block_6 = darknet_conv2d_block(filters=filters[0], kernel_size=kernel_size[0],
+#                                                            strides=strides, weight_decay=weight_decay[0])
+#
+#     def call(self, inputs, training=False):
+#         if isinstance(inputs, tuple):
+#             x, x_skip = inputs
+#             x = self.darknet_conv2d_block_1(x)
+#             x = self.upsampling(x)
+#             x = self.concatenate([x, x_skip])
+#         else:
+#             x = inputs
+#         x = self.darknet_conv2d_block_2(x)
+#         x = self.darknet_conv2d_block_3(x)
+#         x = self.darknet_conv2d_block_4(x)
+#         x = self.darknet_conv2d_block_5(x)
+#         x = self.darknet_conv2d_block_6(x)
+#         return x
+#
+#
+# class yolo_output_block(tf.keras.layers.Layer):
+#     def __init__(self, filters, kernel_size, strides, weight_decay, num_of_anchor_bbox, classes):
+#         super(yolo_output_block, self).__init__()
+#         self.darknet_conv2d_block_1 = darknet_conv2d_block(filters=filters, kernel_size=kernel_size[0],
+#                                                            strides=strides[0], weight_decay=weight_decay[0])
+#         self.darknet_conv2d_block_2 = darknet_conv2d_block(filters=num_of_anchor_bbox * (classes + 5),
+#                                                            kernel_size=kernel_size[0], strides=strides[1],
+#                                                            weight_decay=weight_decay[1], activation=False,
+#                                                            batch_norm=False)
+#
+#     def call(self, inputs, training=False):
+#         x = self.darknet_conv2d_block_1(inputs)
+#         x = self.darknet_conv2d_block_2(x)
+#         return x
+#
+#
+# class yolo_v3(tf.keras.Model):
+#     def __init__(self, num_of_anchor_bbox, classes, checkpoint_dir, model_name):
+#         super(yolo_v3, self).__init__()
+#         self.checkpoint_dir = checkpoint_dir
+#         self.checkpoint_path = os.path.join(self.checkpoint_dir, model_name)
+#         self.darknet_53 = darknet()
+#         self.yolo_conv_block_1 = yolo_conv_block(filters=[512, 1024], kernel_size=[1, 3], strides=1,
+#                                                  weight_decay=[0, 0])
+#         self.yolo_conv_block_2 = yolo_conv_block(filters=[256, 512], kernel_size=[1, 3], strides=1,
+#                                                  weight_decay=[0, 0])
+#         self.yolo_conv_block_3 = yolo_conv_block(filters=[128, 256], kernel_size=[1, 3], strides=1,
+#                                                  weight_decay=[0, 0])
+#         self.yolo_output_block_1 = yolo_output_block(filters=1024, kernel_size=[3, 1], strides=[1, 1],
+#                                                      weight_decay=[0, 0], num_of_anchor_bbox=num_of_anchor_bbox,
+#                                                      classes=classes)
+#         self.yolo_output_block_2 = yolo_output_block(filters=512, kernel_size=[3, 1], strides=[1, 1],
+#                                                      weight_decay=[0, 0], num_of_anchor_bbox=num_of_anchor_bbox,
+#                                                      classes=classes)
+#         self.yolo_output_block_3 = yolo_output_block(filters=256, kernel_size=[3, 1], strides=[1, 1],
+#                                                      weight_decay=[0, 0], num_of_anchor_bbox=num_of_anchor_bbox,
+#                                                      classes=classes)
+#
+#     def call(self, inputs, training=False):
+#         stride_8, stride_16, stride_32 = self.darknet_53(inputs)
+#         stride_32 = self.yolo_conv_block_1(stride_32)
+#         output_1 = self.yolo_output_block_1(stride_32)
+#         stride_32 = self.yolo_conv_block_2((stride_32, stride_16))
+#         output_2 = self.yolo_output_block_2(stride_32)
+#         stride_32 = self.yolo_conv_block_3((stride_32, stride_8))
+#         output_3 = self.yolo_output_block_3(stride_32)
+#         return [output_3, output_2, output_1]

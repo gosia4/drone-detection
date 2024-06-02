@@ -11,14 +11,15 @@ CLASSES               = "thermographic_data/classes.txt"
 NUM_OF_CLASSES        = len(read_class_names(CLASSES))
 MODEL_NAME            = "model_2"
 CHECKPOINTS_FOLDER    = "checkpoints" + "/" + MODEL_NAME
+checkpoint_path = "checkpoints/model_2/"
 ANNOT_PATH            = "thermographic_data/test/images/free_2"
 OUTPUT_PATH           = 'predicted_images/' + MODEL_NAME + "/free_2"
 DETECT_BATCH          = False
 DETECT_WHOLE_VID      = True
 BATCH_SIZE            = 1804
 IMAGE_PATH            = ANNOT_PATH + "/free_2/free_2_frame_1"
-# INPUT_SIZE            = 416
-INPUT_SIZE            = (640, 480)
+INPUT_SIZE            = 416
+# INPUT_SIZE            = (640, 480)
 SCORE_THRESHOLD       = 0.8
 IOU_THRESHOLD         = 0.45
 
@@ -28,21 +29,27 @@ YOLO_IOU_LOSS_THRESH        = 0.5
 YOLO_ANCHOR_PER_SCALE       = 3
 YOLO_MAX_BBOX_PER_SCALE     = 100
 YOLO_INPUT_SIZE             = 416
-YOLO_BATCH_FRAMES           = 5
+YOLO_BATCH_FRAMES           = 1
 YOLO_PREPROCESS_IOU_THRESH  = 0.3
 YOLO_ANCHORS                = [[[10,  13], [16,   30], [33,   23]],
                                [[30,  61], [62,   45], [59,  119]],
                                [[116, 90], [156, 198], [373, 326]]]
 
 def main():
-    
+
     # create the yolo_v3_model
-    yolo_v3_model = yolo_v3(num_of_anchor_bbox = YOLO_ANCHOR_PER_SCALE, classes = NUM_OF_CLASSES, 
+    yolo_v3_model = yolo_v3(num_of_anchor_bbox = YOLO_ANCHOR_PER_SCALE, classes = NUM_OF_CLASSES,
                             checkpoint_dir = CHECKPOINTS_FOLDER, model_name = MODEL_NAME)
-    
-    # load weights of last saved checkpoint
+    # if yolo_v3_model.checkpoint_path is not None:
+    #     print("Ścieżka do checkpointu:", yolo_v3_model.checkpoint_path)
+    #     # load weights of last saved checkpoint
+    #     yolo_v3_model.load_weights(yolo_v3_model.checkpoint_path + '.weights.h5').expect_partial()
+    # else:
+    #     print("Nie można załadować wag modelu. Sprawdź ścieżkę do checkpointu.")
+
+    # # load weights of last saved checkpoint
     # yolo_v3_model.load_weights(yolo_v3_model.checkpoint_path).expect_partial()
-    yolo_v3_model.load_weights(yolo_v3_model.checkpoint_path + '.weights.h5').expect_partial()
+    yolo_v3_model.load_weights(checkpoint_path + 'model_2.weights.h5')
 
     # use model to detect random batch of images from validate / test
     if DETECT_BATCH:

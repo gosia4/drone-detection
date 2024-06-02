@@ -2,7 +2,7 @@ import time
 import cv2
 import numpy as np
 import os
-
+import glob
 
 # to działa, ale zapisuje w czterech linijkach
 def tag_obrazy(folder_path, output_folder):
@@ -31,7 +31,7 @@ def tag_obrazy(folder_path, output_folder):
             img = cv2.imread(os.path.join(folder_path, plik))
 
             # Call function to mark areas
-            obszary = tag_klatki(img)
+            obszary = tag_klatki(img, plik)
 
             # Add coordinates to the list
             obszary_zainteresowania.extend(obszary)
@@ -48,12 +48,13 @@ def tag_obrazy(folder_path, output_folder):
     return obszary_zainteresowania
 
 
-def tag_klatki(img):
+def tag_klatki(img, nazwa_pliku):
     """
     Function to mark areas on an image.
 
     Arguments:
         img: Image to be tagged.
+        nazwa_pliku: Nazwa pliku, która będzie wyświetlana w oknie.
 
     Returns:
         List containing coordinates of all drawn rectangles.
@@ -71,48 +72,18 @@ def tag_klatki(img):
                 # Append second point (x, y)
                 obszary.append([x, y])
 
-    # def konwertuj_wspolrzedne(obszary):
-    #     """
-    #     Funkcja do konwersji współrzędnych z formatu [x1, y1, x2, y2]
-    #     do formatu [klasa, środek_x, środek_y, szerokość, wysokość].
-    #
-    #     Argumenty:
-    #         obszary: Lista zawierająca współrzędne obszarów.
-    #
-    #     Returns:
-    #         Lista zawierająca skonwertowane współrzędne.
-    #     """
-    #
-    #     obszary_skonwertowane = []
-    #     for obszar in obszary:
-    #         x1, y1, x2, y2 = obszar
-    #         # Obliczanie środka i rozmiaru prostokąta
-    #         środek_x = (x1 + x2) / 2
-    #         środek_y = (y1 + y2) / 2
-    #         szerokość = x2 - x1
-    #         wysokość = y2 - y1
-    #         # Normalizacja współrzędnych
-    #         środek_x_norm = środek_x / img.shape[1]
-    #         środek_y_norm = środek_y / img.shape[0]
-    #         szerokość_norm = szerokość / img.shape[1]
-    #         wysokość_norm = wysokość / img.shape[0]
-    #         # Dodanie klasy (0) i skonwertowanych współrzędnych do listy
-    #         obszar_skonwertowany = [0, środek_x_norm, środek_y_norm, szerokość_norm, wysokość_norm]
-    #         obszary_skonwertowane.append(obszar_skonwertowany)
-    #
-    #     return obszary_skonwertowane
-
-    cv2.namedWindow('Obraz zaznaczony')
-    cv2.setMouseCallback('Obraz zaznaczony', zaznacz_obszar)
+    cv2.namedWindow(nazwa_pliku)  # Ustawiamy nazwę okna jako nazwa pliku
+    cv2.setMouseCallback(nazwa_pliku, zaznacz_obszar)
 
     while True:
         img_copy = img.copy()
-        cv2.imshow('Obraz zaznaczony', img_copy)
+        cv2.imshow(nazwa_pliku, img_copy)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     cv2.destroyAllWindows()
     return obszary
+
 
 
 def zapisz_do_pliku(obszary, output_folder):
@@ -151,7 +122,7 @@ def konwertuj_wspolrzedne(plik_txt, output_folder, image_width, image_height):
         if len(wsp.split()) < 4:
             print(f"Plik '{plik_txt}' zawiera mniej niż 4 liczby i zostanie pominięty.")
             continue
-        # klasa, x1, y1, x2, y2 = map(float, wsp.split())
+
         x1, y1, x2, y2 = map(float, wsp.split())
 
         # Obliczanie środka prostokąta
@@ -200,33 +171,108 @@ def konwertuj_wspolrzedne(plik_txt, output_folder, image_width, image_height):
 # Ustawienia do konwertowania wspórzédnych
 
 # folder_txt = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\free_3_niezmormalizowane, validate"
-folder_txt = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\drone-detection\drone-detection\thermographic_data\validate\labels\dodatkowe_dane"
-# output_folder = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\drone-detection\drone-detection\thermographic_data\validate\labels\free_3"
-output_folder = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\drone-detection\drone-detection\thermographic_data\validate\labels\przekonwertowane"
-
-# Konwersja plików txt
-for plik in os.listdir(folder_txt):
-    if plik.endswith('.txt'):
-        konwertuj_wspolrzedne(os.path.join(folder_txt, plik), output_folder, 640, 480)
+# folder_txt = r"C:\Users\gosia\drone-detection\drone-detection\thermographic_data\train\labels\free_1_przed_konwertowaniem"
+# # output_folder = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\drone-detection\drone-detection\thermographic_data\validate\labels\free_3"
+# output_folder = r"C:\Users\gosia\drone-detection\drone-detection\thermographic_data\train\labels\free_1"
+#
+# # Konwersja plików txt
+# for plik in os.listdir(folder_txt):
+#     if plik.endswith('.txt'):
+#         konwertuj_wspolrzedne(os.path.join(folder_txt, plik), output_folder, 640, 480)
 
 
 
 
 # Ustawienie ścieżki do folderu z obrazami, tagowanie obrazów
 
-# # folder_path = r"C:\Users\gosia\OneDrive - vus.hr\klatki_przyciete_7mb\test"
-# # folder_path = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\drone-detection-thermal-images\thermal_signature_drone_detection\thermographic_day\validate\images"
-# folder_path = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\drone-detection\drone-detection\thermographic_data\validate\images\dodatkowe_dane"
-#
-# # Ustawienie ścieżki do folderu do zapisu współrzędnych
-# output_folder = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\drone-detection\drone-detection\thermographic_data\validate\labels\dodatkowe_dane"
-# # output_folder = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\probne_tagowanie"
-# # output_folder = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\drone-detection-thermal-images\thermal_signature_drone_detection\thermographic_day\train\labels_2"
-#
-# # Wywołanie funkcji do tagowania obrazów
-# obszary_zainteresowania = tag_obrazy(folder_path, output_folder)
-#
-# # Wyświetlenie współrzędnych zaznaczonych obszarów
+# folder_path = r"C:\Users\gosia\OneDrive - vus.hr\klatki_przyciete_7mb\test"
+# folder_path = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\drone-detection-thermal-images\thermal_signature_drone_detection\thermographic_day\validate\images"
+folder_path = r"C:\Users\gosia\drone-detection\drone-detection\thermographic_data\validate\images\free_3"
+
+# Ustawienie ścieżki do folderu do zapisu współrzędnych
+output_folder = r"C:\Users\gosia\drone-detection\drone-detection\thermographic_data\validate\labels\nieprzekonwertowane"
+# output_folder = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\probne_tagowanie"
+# output_folder = r"C:\Users\gosia\OneDrive - vus.hr\Desktop\drone-detection-thermal-images\thermal_signature_drone_detection\thermographic_day\train\labels_2"
+
+# Wywołanie funkcji do tagowania obrazów
+obszary_zainteresowania = tag_obrazy(folder_path, output_folder)
+
+# Wyświetlenie współrzędnych zaznaczonych obszarów
 # print("Współrzędne zaznaczonych obszarów:")
 # for obszar in obszary_zainteresowania:
 #     print(obszar)
+
+
+
+
+
+# zamień mając już współrzędne lewego górnego rogu oraz prawego dolnego na format yolo,
+# czyli współrzędne środka oraz wysokość i szerkość bounding boxa
+import os
+import glob
+
+def konwertuj_wspolrzedne2(folder_path, output_folder, image_width, image_height):
+    """
+    Funkcja konwertująca współrzędne prostokątów na format YOLO.
+
+    Arguments:
+        folder_path: Ścieżka do folderu zawierającego pliki tekstowe z współrzędnymi.
+        output_folder: Ścieżka do folderu, w którym zostaną zapisane pliki w formacie YOLO.
+        image_width: Szerokość obrazu.
+        image_height: Wysokość obrazu.
+
+    Returns:
+        None.
+    """
+    # Utwórz folder docelowy, jeśli nie istnieje
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+    # Pobierz listę plików zgodnych z danym wzorcem nazwy
+    files = glob.glob(os.path.join(folder_path, "*.txt"))
+
+    # Iteruj przez wszystkie pliki
+    for file_path in files:
+        with open(file_path, 'r') as f:
+            wspolrzedne = f.readlines()
+
+        yolo_wspolrzedne = []
+
+        for wsp in wspolrzedne:
+            if len(wsp.split()) < 4:
+                print(f"Plik '{file_path}' zawiera mniej niż 4 liczby i zostanie pominięty.")
+                continue
+            x1, y1, x2, y2 = map(float, wsp.split())
+
+            # Obliczanie współrzędnych środka prostokąta
+            srodek_x = (x1 + x2) / 2
+            srodek_y = (y1 + y2) / 2
+
+            # Obliczanie szerokości i wysokości prostokąta
+            szerokosc = abs(x2 - x1)
+            wysokosc = abs(y2 - y1)
+
+            # Normalizacja współrzędnych do zakresu [0, 1] względem szerokości i wysokości obrazu
+            x1_norm = round(srodek_x / image_width, 6)
+            y1_norm = round(srodek_y / image_height, 6)
+            szerokosc_norm = round(szerokosc / image_width, 6)
+            wysokosc_norm = round(wysokosc / image_height, 6)
+
+            klasa = 0
+            # Format YOLO: klasa środek_x środek_y szerokość wysokość
+            yolo_wspolrzedne.append([int(klasa), x1_norm, y1_norm, szerokosc_norm, wysokosc_norm])
+
+        # Utwórz nazwę pliku YOLO
+        nazwa_pliku = os.path.splitext(os.path.basename(file_path))[0] + '.txt'
+        # Zapisz współrzędne do pliku YOLO
+        with open(os.path.join(output_folder, nazwa_pliku), 'w') as f:
+            for wsp in yolo_wspolrzedne:
+                f.write(' '.join(map(str, wsp)) + '\n')
+
+
+# folder = r"C:\Users\gosia\drone-detection\drone-detection\do_testu\free_1_przed_konwertowaniem"
+folder = r"C:\Users\gosia\drone-detection\drone-detection\thermographic_data\validate\labels\nieprzekonwertowane"
+# output = r"C:\Users\gosia\drone-detection\drone-detection\thermographic_data\train\labels\free_1"
+output = r"C:\Users\gosia\drone-detection\drone-detection\thermographic_data\validate\labels\free_3"
+
+konwertuj_wspolrzedne2(folder, output, 416, 416)
